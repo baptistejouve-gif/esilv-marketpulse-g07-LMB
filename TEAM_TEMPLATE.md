@@ -21,7 +21,7 @@ Add a fourth row only if your team has four members.
 ## Repository
 
 - Team repository: `esilv-marketpulse-g07-LMB`
-- Upstream repository: `tawounfouet/esilv-marketpulse`
+- Upstream repository: `baptistejouve-gif/esilv-marketpulse-g07-LMB`
 
 ## Market choice
 
