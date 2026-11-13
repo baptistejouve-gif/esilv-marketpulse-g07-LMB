@@ -1,3 +1,8 @@
+ feature/display-market-info
+
+from pathlib import Path
+
+main
 import csv
 import json
 from pathlib import Path
@@ -26,6 +31,18 @@ def get_first_close(prices):
 
 def get_last_close(prices):
     return float(prices[-1]["close"])
+feature/display-market-info
+
+
+def get_first_date(prices):
+    return prices[0]["date"]
+
+
+def get_last_date(prices):
+    return prices[-1]["date"]
+
+ main
+
 
 def display_market_summary(asset, prices, show_currency=True):
     print(f"{asset['ticker']} - {asset['name']}")
@@ -54,10 +71,14 @@ feature/display-market-metadata
 
 
     print(f'{asset["ticker"]} - {asset["name"]}')
+feature/display-market-info
+    print(f'Market : {asset["market"]}')
+
     if "market" in asset:
         print(f'Market       : {asset["market"]}')
     if "currency" in asset:
         print(f'Currency     : {asset["currency"]}')
+ main
     print(f"Observations : {len(prices)}")
     print(f"First date   : {get_first_date(prices)}")
     print(f"Last date    : {get_last_date(prices)}")
