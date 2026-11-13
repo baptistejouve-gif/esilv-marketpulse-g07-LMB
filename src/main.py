@@ -43,6 +43,7 @@ def display_market_summary(asset, prices, show_currency=True):
     last_date = get_last_date(prices)
     first_close = get_first_close(prices)
     last_close = get_last_close(prices)
+feature/display-market-metadata
     
     currency_str = f" {asset.get('currency', '')}" if show_currency else ""
     
@@ -50,6 +51,25 @@ def display_market_summary(asset, prices, show_currency=True):
     print(f"Last date    : {last_date}")
     print(f"First close  : {first_close:.2f}{currency_str}")
     print(f"Last close   : {last_close:.2f}{currency_str}\n")
+
+
+    print(f'{asset["ticker"]} - {asset["name"]}')
+    if "market" in asset:
+        print(f'Market       : {asset["market"]}')
+    if "currency" in asset:
+        print(f'Currency     : {asset["currency"]}')
+    print(f"Observations : {len(prices)}")
+    print(f"First date   : {get_first_date(prices)}")
+    print(f"Last date    : {get_last_date(prices)}")
+
+    if show_currency:
+        print(f'First close  : {first_close:.2f} {asset["currency"]}')
+        print(f'Last close   : {last_close:.2f} {asset["currency"]}')
+    else:
+        print(f"First close  : {first_close:.2f}")
+        print(f"Last close   : {last_close:.2f}")
+
+main
 
 def main():
     print("=== MarketPulse ===\n")
