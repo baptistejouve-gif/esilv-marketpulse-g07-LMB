@@ -1,25 +1,32 @@
-from pathlib import Path
 import csv
 import json
+from pathlib import Path
 
-DATA_DIR = Path("data/sample")
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 LOOKBACK_LABEL = "1 month"
 INTERVAL_LABEL = "Daily"
 
 
 def load_instruments():
-    with open(DATA_DIR / "instruments.json", encoding="utf-8") as file:
+    file_path = BASE_DIR / "data" / "sample" / "instruments.json"
+
+    with open(file_path, "r", encoding="utf-8") as file:
         return json.load(file)
 
 
 def load_prices():
-    with open(DATA_DIR / "prices.csv", encoding="utf-8") as file:
+    file_path = BASE_DIR / "data" / "sample" / "prices.csv"
+
+    with open(file_path, "r", encoding="utf-8") as file:
         return list(csv.DictReader(file))
 
 
-def filter_prices(prices, ticker):
-    return [row for row in prices if row["ticker"] == ticker]
+def get_prices_for_ticker(prices, ticker):
+    return [
+        price for price in prices
+        if price["ticker"] == ticker
+    ]
 
 
 def get_first_close(prices):
@@ -28,6 +35,8 @@ def get_first_close(prices):
 
 def get_last_close(prices):
     return float(prices[-1]["close"])
+
+
 def get_first_date(prices):
     return prices[0]["date"]
 
@@ -35,21 +44,29 @@ def get_first_date(prices):
 def get_last_date(prices):
     return prices[-1]["date"]
 
-def display_market_summary(asset, prices, show_currency=True):
-    first_close = get_first_close(prices)
-    last_close = get_last_close(prices)
 
-    print(f'{asset["ticker"]} - {asset["name"]}')
+# Maxandre's feature: validate market observations
+def validate_prices(prices, ticker):
+    if not prices:
+        raise ValueError(f"No prices found for {ticker}")
+
+
+def display_market_summary(instrument, prices, is_benchmark=False):
+    ticker = instrument["ticker"]
+    name = instrument["name"]
+
+    print(f"{ticker} - {name}")
     print(f"Observations : {len(prices)}")
     print(f"First date   : {get_first_date(prices)}")
     print(f"Last date    : {get_last_date(prices)}")
 
-    if show_currency:
-        print(f'First close  : {first_close:.2f} {asset["currency"]}')
-        print(f'Last close   : {last_close:.2f} {asset["currency"]}')
+    if is_benchmark:
+        print(f"First close  : {get_first_close(prices):.2f}")
+        print(f"Last close   : {get_last_close(prices):.2f}")
     else:
-        print(f"First close  : {first_close:.2f}")
-        print(f"Last close   : {last_close:.2f}")
+        currency = instrument["currency"]
+        print(f"First close  : {get_first_close(prices):.2f} {currency}")
+        print(f"Last close   : {get_last_close(prices):.2f} {currency}")
 
 
 def main():
@@ -59,8 +76,17 @@ def main():
     instrument = instruments["instrument"]
     benchmark = instruments["benchmark"]
 
-    instrument_prices = filter_prices(prices, instrument["ticker"])
-    benchmark_prices = filter_prices(prices, benchmark["ticker"])
+    instrument_prices = get_prices_for_ticker(
+        prices, instrument["ticker"]
+    )
+
+    benchmark_prices = get_prices_for_ticker(
+        prices, benchmark["ticker"]
+    )
+
+    # Validate the observations before using them
+    validate_prices(instrument_prices, instrument["ticker"])
+    validate_prices(benchmark_prices, benchmark["ticker"])
 
     print("=== MarketPulse ===")
     print()
@@ -76,7 +102,11 @@ def main():
     print()
 
     print("Benchmark")
-    display_market_summary(benchmark, benchmark_prices, False)
+    display_market_summary(
+        benchmark,
+        benchmark_prices,
+        is_benchmark=True
+    )
 
 
 if __name__ == "__main__":
