@@ -1,7 +1,11 @@
 
 from pathlib import Path
-import csv
 import json
+
+from providers.yahoo_provider import (
+    fetch_yahoo_prices,
+    YAHOO_SYMBOLS,
+)
 
 from analytics import (
     align_series,
@@ -15,52 +19,18 @@ DATA_DIR = Path("data/sample")
 LOOKBACK_LABEL = "1 month"
 INTERVAL_LABEL = "Daily"
 
+PERIOD = "1mo"
+INTERVAL = "1d"
+
 
 def load_instruments():
     with open(DATA_DIR / "instruments.json", encoding="utf-8") as file:
         return json.load(file)
 
 
-def load_prices():
-    with open(DATA_DIR / "prices.csv", encoding="utf-8") as file:
-        return list(csv.DictReader(file))
-
-
-def normalize_price_row(row):
-    return {
-        "date": row["date"],
-        "ticker": row["ticker"],
-        "open": float(row["open"]),
-        "high": float(row["high"]),
-        "low": float(row["low"]),
-        "close": float(row["close"]),
-        "volume": int(row["volume"]),
-    }
-
-
-def filter_prices(prices, ticker):
-    return [row for row in prices if row["ticker"] == ticker]
-
-
 def validate_prices(prices, ticker):
     if not prices:
         raise ValueError(f"No prices found for {ticker}")
-
-
-def get_first_date(prices):
-    return prices[0]["date"]
-
-
-def get_last_date(prices):
-    return prices[-1]["date"]
-
-
-def get_first_close(prices):
-    return prices[0]["close"]
-
-
-def get_last_close(prices):
-    return prices[-1]["close"]
 
 
 def display_market_summary(asset, prices, show_currency=True):
@@ -74,12 +44,15 @@ def display_market_summary(asset, prices, show_currency=True):
 
     print(f"Observations : {len(prices)}")
 
-    first_date = get_first_date(prices)
-    last_date = get_last_date(prices)
-    first_close = get_first_close(prices)
-    last_close = get_last_close(prices)
+    first_date = prices[0]["date"]
+    last_date = prices[-1]["date"]
+    first_close = prices[0]["close"]
+    last_close = prices[-1]["close"]
 
-    currency_str = f" {asset.get('currency', '')}" if show_currency else ""
+    currency_str = (
+        f" {asset.get('currency', '')}"
+        if show_currency else ""
+    )
 
     print(f"First date   : {first_date}")
     print(f"Last date    : {last_date}")
@@ -89,28 +62,29 @@ def display_market_summary(asset, prices, show_currency=True):
 
 def main():
     instruments = load_instruments()
-    prices = load_prices()
-
-    normalized_prices = [
-        normalize_price_row(row)
-        for row in prices
-    ]
 
     instrument = instruments["instrument"]
     benchmark = instruments["benchmark"]
 
-    instrument_prices = filter_prices(
-        normalized_prices, instrument["ticker"]
+    # Retrieve remote Yahoo Finance data
+    instrument_prices = fetch_yahoo_prices(
+        symbol=YAHOO_SYMBOLS[instrument["ticker"]],
+        canonical_ticker=instrument["ticker"],
+        period=PERIOD,
+        interval=INTERVAL,
     )
 
-    benchmark_prices = filter_prices(
-        normalized_prices, benchmark["ticker"]
+    benchmark_prices = fetch_yahoo_prices(
+        symbol=YAHOO_SYMBOLS[benchmark["ticker"]],
+        canonical_ticker=benchmark["ticker"],
+        period=PERIOD,
+        interval=INTERVAL,
     )
 
     validate_prices(instrument_prices, instrument["ticker"])
     validate_prices(benchmark_prices, benchmark["ticker"])
 
-    # Align both series on common dates
+    # Align observations on common dates
     aligned_instrument, aligned_benchmark = align_series(
         instrument_prices,
         benchmark_prices,
@@ -119,7 +93,7 @@ def main():
     if not aligned_instrument or not aligned_benchmark:
         raise ValueError("No common observation dates")
 
-    # Calculate period returns
+    # Reuse TD07 analytics
     instrument_return = calculate_period_return(
         aligned_instrument
     )
@@ -128,13 +102,11 @@ def main():
         aligned_benchmark
     )
 
-    # Calculate relative performance
     relative_performance = calculate_relative_performance(
         instrument_return,
         benchmark_return,
     )
 
-    # Calculate base-100 series
     instrument_base_100 = calculate_base_100(
         aligned_instrument
     )
@@ -144,6 +116,10 @@ def main():
     )
 
     print("=== MarketPulse ===")
+    print()
+
+    print("Provider")
+    print("Yahoo Finance via yfinance")
     print()
 
     print("Market configuration")
