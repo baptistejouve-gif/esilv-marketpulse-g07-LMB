@@ -1,4 +1,3 @@
-import csv
 import json
 from pathlib import Path
 
@@ -8,6 +7,7 @@ from analytics import (
     calculate_period_return,
     calculate_relative_performance,
 )
+from providers.yahoo_provider import YAHOO_SYMBOLS, fetch_yahoo_prices
 
 DATA_DIR = Path("data/sample")
 
@@ -15,27 +15,6 @@ DATA_DIR = Path("data/sample")
 def load_instruments():
     with open(DATA_DIR / "instruments.json", encoding="utf-8") as file:
         return json.load(file)
-
-
-def load_prices():
-    with open(DATA_DIR / "prices.csv", encoding="utf-8") as file:
-        return list(csv.DictReader(file))
-
-
-def normalize_price_row(row):
-    return {
-        "date": row["date"],
-        "ticker": row["ticker"],
-        "open": float(row["open"]),
-        "high": float(row["high"]),
-        "low": float(row["low"]),
-        "close": float(row["close"]),
-        "volume": int(row["volume"]),
-    }
-
-
-def filter_prices(prices, ticker):
-    return [row for row in prices if row["ticker"] == ticker]
 
 
 def get_first_date(prices):
@@ -76,14 +55,22 @@ def main():
     print("=== MarketPulse ===\n")
 
     instruments = load_instruments()
-    raw_prices = load_prices()
-    normalized_prices = [normalize_price_row(row) for row in raw_prices]
-
     instrument = instruments["instrument"]
     benchmark = instruments["benchmark"]
 
-    instrument_prices = filter_prices(normalized_prices, instrument["ticker"])
-    benchmark_prices = filter_prices(normalized_prices, benchmark["ticker"])
+    instrument_prices = fetch_yahoo_prices(
+        symbol=YAHOO_SYMBOLS[instrument["ticker"]],
+        canonical_ticker=instrument["ticker"],
+        period="1mo",
+        interval="1d",
+    )
+
+    benchmark_prices = fetch_yahoo_prices(
+        symbol=YAHOO_SYMBOLS[benchmark["ticker"]],
+        canonical_ticker=benchmark["ticker"],
+        period="1mo",
+        interval="1d",
+    )
 
     aligned_instrument, aligned_benchmark = align_series(
         instrument_prices,
@@ -100,9 +87,14 @@ def main():
     instrument_base_100 = calculate_base_100(aligned_instrument)
     benchmark_base_100 = calculate_base_100(aligned_benchmark)
 
+    print("Provider")
+    print("Yahoo Finance via yfinance\n")
+
     print("Market configuration")
-    print("Period   : 1 month")
-    print("Interval : Daily\n")
+    print("Instrument : AAPL - Apple Inc.")
+    print("Benchmark  : S&P 500")
+    print("Period     : 1 month")
+    print("Interval   : Daily\n")
 
     print("Instrument")
     display_market_summary(
