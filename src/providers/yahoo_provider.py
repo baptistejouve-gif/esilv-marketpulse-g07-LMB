@@ -1,6 +1,4 @@
-
 import yfinance as yf
-
 
 YAHOO_SYMBOLS = {
     "AAPL": "AAPL",
