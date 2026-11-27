@@ -476,5 +476,22 @@ This README intentionally does not display CI, security, release or license badg
 **School:** ESILV - A4  
 **Use case:** MarketPulse - Multi-Source Financial Market Data Dashboard
 
-## Execution (TD05)
-Run MarketPulse from the repository root: python src/main.py
+## Team Release & Execution Guide (TD12)
+
+- **Application:** MarketPulse - Multi-Source Financial Market Data Comparison
+- **Instrument:** AAPL (Apple Inc.)
+- **Benchmark:** SP500 (S&P 500)
+- **Lookback / Interval:** 1 month / Daily
+- **Final Authorized Provider & Mode:** Bloomberg stage - APPROVED_SAMPLE (using data/sample/bloomberg_reference_sample.json; not live Bloomberg connectivity)
+- **Environment Constraint:** Runs offline/locally via the instructor-approved Bloomberg sample fixture without external credentials.
+
+### Installation & Run Commands
+
+- Install dependencies: `python -m pip install -r requirements.txt`
+- Run terminal summary: `python src/main.py`
+- Run Dash dashboard: `python src/dashboard.py` (open http://127.0.0.1:8050/)
+
+### Evidence & Reports
+
+- **Checkpoint C Evidence:** evidence/checkpoint-c/<github-username>/
+- **TD Reports:** rendu/
