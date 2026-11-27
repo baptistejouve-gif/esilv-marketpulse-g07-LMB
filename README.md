@@ -1,3 +1,111 @@
+
+# MarketPulse - Group LMB
+
+## Team members
+
+- Baptiste Jouve
+- Maxandre Guillin
+- Louis Hohwald
+
+## Project overview
+
+MarketPulse is a financial market analytics application
+developed as part of the ESILV Python, Git and Linux course.
+
+The application compares a financial instrument with its
+benchmark using period returns, relative performance and
+base-100 normalization.
+
+## Final market configuration
+
+| Parameter | Value |
+|---|---|
+| Instrument | AAPL - Apple Inc. |
+| Benchmark | SP500 - S&P 500 |
+| Lookback | 1 month |
+| Interval | Daily |
+| Provider | Bloomberg stage |
+| Access mode | APPROVED_SAMPLE |
+
+The final application uses the instructor-provided
+Bloomberg sample. Live Bloomberg connectivity has not
+been demonstrated.
+
+## Installation
+
+Requirements: Python 3, Git and pip.
+
+Clone the repository:
+
+```bash
+git clone https://github.com/baptistejouve-gif/esilv-marketpulse-g07-LMB.git
+cd esilv-marketpulse-g07-LMB
+```
+
+Create and activate a virtual environment on Linux or WSL:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+Install the required dependencies:
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+## Run the application
+
+Terminal version:
+
+```bash
+python src/main.py
+```
+
+Dashboard version:
+
+```bash
+python src/dashboard.py
+```
+
+Open http://127.0.0.1:8050/ in your browser.
+
+Press Ctrl+C in the terminal to stop the dashboard.
+
+## Application architecture
+
+- providers/: data acquisition and normalization.
+- analytics.py: shared financial calculations.
+- main.py: application snapshot and terminal output.
+- dashboard.py: graphical presentation using Dash.
+
+Both the terminal and dashboard consume the shared
+build_market_snapshot() function.
+
+## Evidence and submissions
+
+Individual TD submissions are available in:
+
+- rendu/Baptiste/
+- rendu/Maxandre/
+- rendu/Louis/
+
+Official checkpoint evidence is stored under evidence/
+according to the course requirements.
+
+## Environment limitations
+
+The final APPROVED_SAMPLE mode uses local teaching data.
+No Bloomberg subscription or credentials are required.
+
+Yahoo Finance retrieval requires internet access.
+Sample data must not be interpreted as certified live
+Bloomberg market data.
+
+---
+
+## Original course documentation
 # ESILV MarketPulse
 
 <p align="center">
